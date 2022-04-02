@@ -55,11 +55,7 @@ func FrequencyAnalysis(s string) FrequencyHistogram {
 	length := float64(len(runes))
 
 	for _, r := range runes {
-		freqs[r] += 1
-	}
-
-	for k, _ := range freqs {
-		freqs[k] /= length
+		freqs[r] += 1 / length
 	}
 
 	return freqs
