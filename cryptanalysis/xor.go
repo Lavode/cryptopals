@@ -13,7 +13,7 @@ import (
 func SingleByteXor(ctxt []byte) (msg []byte, key byte, distance float64) {
 	distance = 2 // Hellinger distance has an upper bound of 1
 
-	for keyCandidate := 0; keyCandidate <= 256; keyCandidate++ {
+	for keyCandidate := 0; keyCandidate <= 255; keyCandidate++ {
 		msgCandidate, distanceCandidate := evaluateSingleByteXor(ctxt, byte(keyCandidate))
 		if distanceCandidate < distance {
 			distance = distanceCandidate
