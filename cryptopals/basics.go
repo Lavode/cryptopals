@@ -1,13 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"encoding/hex"
 	"log"
+	"os"
 
+	"github.com/Lavode/cryptopals/bitwise"
 	"github.com/Lavode/cryptopals/convert"
+	"github.com/Lavode/cryptopals/cryptanalysis"
 )
 
 func HexToBase64() {
+	header(1, "Convert hex to base64")
+
 	in := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 	out, err := convert.HexToBase64(in)
 	if err != nil {
@@ -18,6 +24,8 @@ func HexToBase64() {
 }
 
 func FixedXor() {
+	header(2, "Fixed XOR")
+
 	a := "1c0111001f010100061a024b53535009181c"
 	b := "686974207468652062756c6c277320657965"
 
@@ -26,8 +34,70 @@ func FixedXor() {
 		log.Fatalf("Error decoding hex: %v", err)
 	}
 
-	bBytes, err := hex.DecodedString(b)
+	bBytes, err := hex.DecodeString(b)
 	if err != nil {
 		log.Fatalf("Error decoding hex: %v", err)
 	}
+
+	xor := bitwise.Xor(aBytes, bBytes)
+	xorEnc := hex.EncodeToString(xor)
+	log.Printf("%s XOR %s = %s", a, b, xorEnc)
+}
+
+func SingleByteXor() {
+	header(3, "Single-byte XOR cipher")
+
+	ctxt := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+	ctxtBytes, err := hex.DecodeString(ctxt)
+	if err != nil {
+		log.Fatalf("Error decoding hex: %v", err)
+	}
+
+	msg, key, dist := cryptanalysis.SingleByteXor(ctxtBytes)
+	log.Printf("Most likely key: %x, distance = %f\nMessage: %s", key, dist, msg)
+}
+
+func DetectSingleByteXor() {
+	header(4, "Detect single-character XOR")
+
+	file, err := os.Open("../data/4.txt")
+	if err != nil {
+		log.Fatalf("Error reading data/4.txt: %v", err)
+	}
+	defer file.Close()
+
+	ctxts := make([][]byte, 0)
+	scanner := bufio.NewScanner(file)
+	i := 0
+	for scanner.Scan() {
+		i++
+		hexString := scanner.Text()
+		ctxt, err := hex.DecodeString(hexString)
+		if err != nil {
+			log.Fatalf("Error decoding hex: %v", err)
+		}
+		ctxts = append(ctxts, ctxt)
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("Error reading from file: %v", err)
+	}
+
+	var bestDist float64 = 2
+	var bestKey byte
+	var bestMsg []byte
+	for _, ctxt := range ctxts {
+		msg, key, dist := cryptanalysis.SingleByteXor(ctxt)
+		if dist < bestDist {
+			bestDist = dist
+			bestKey = key
+			bestMsg = msg
+		}
+	}
+
+	log.Printf("Most likely Key = %x, distance = %f\nPlaintext = %s", bestKey, bestDist, bestMsg)
+}
+
+func header(id int, name string) {
+	log.Printf("==== Challenge %d: %s ====", id, name)
 }

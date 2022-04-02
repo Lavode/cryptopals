@@ -30,6 +30,10 @@ func main() {
 			HexToBase64()
 		case 2:
 			FixedXor()
+		case 3:
+			SingleByteXor()
+		case 4:
+			DetectSingleByteXor()
 		default:
 			fmt.Println("Challenge outside of allowed range for given set")
 		}

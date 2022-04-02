@@ -8,7 +8,7 @@ import (
 
 func Equals(t *testing.T, a, b interface{}) {
 	if !cmp.Equal(a, b) {
-		t.Errorf("Expected %v = %v", a, b)
+		t.Errorf("Expected %v = %v. Difference:\n%s", a, b, cmp.Diff(a, b))
 	}
 }
 
