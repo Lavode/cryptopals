@@ -3,6 +3,8 @@ package language
 import (
 	"math"
 	"strings"
+
+	"github.com/Lavode/cryptopals/sliceutil"
 )
 
 type FrequencyHistogram map[rune]float64
@@ -77,7 +79,7 @@ func HistogramDifference(a, b FrequencyHistogram) float64 {
 	for k := range b {
 		keys = append(keys, k)
 	}
-	keys = unique(keys)
+	keys = sliceutil.Unique(keys)
 
 	// Hellinger distance is 1/sqrt(2) * sqrt[SUM{(sqrt(p_i) - sqrt(q_i))^2}]
 	for _, k := range keys {
@@ -87,18 +89,4 @@ func HistogramDifference(a, b FrequencyHistogram) float64 {
 	dist = 1 / math.Sqrt(2) * math.Sqrt(dist)
 
 	return dist
-}
-
-func unique[T comparable](x []T) []T {
-	out := make([]T, 0)
-	seen := make(map[T]bool)
-
-	for _, v := range x {
-		if !seen[v] {
-			out = append(out, v)
-			seen[v] = true
-		}
-	}
-
-	return out
 }
