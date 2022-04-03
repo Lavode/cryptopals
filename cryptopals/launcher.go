@@ -34,6 +34,10 @@ func main() {
 			SingleByteXor()
 		case 4:
 			DetectSingleByteXor()
+		case 5:
+			RepeatingKeyXor()
+		case 6:
+			BreakRepeatingKeyXor()
 		default:
 			fmt.Println("Challenge outside of allowed range for given set")
 		}

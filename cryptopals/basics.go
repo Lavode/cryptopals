@@ -2,13 +2,15 @@ package main
 
 import (
 	"bufio"
+	"encoding/base64"
 	"encoding/hex"
+	"io"
 	"log"
 	"os"
 
+	"github.com/Lavode/cryptopals/analysis"
 	"github.com/Lavode/cryptopals/bitwise"
 	"github.com/Lavode/cryptopals/convert"
-	"github.com/Lavode/cryptopals/cryptanalysis"
 )
 
 func HexToBase64() {
@@ -53,7 +55,7 @@ func SingleByteXor() {
 		log.Fatalf("Error decoding hex: %v", err)
 	}
 
-	msg, key, dist := cryptanalysis.SingleByteXor(ctxtBytes)
+	msg, key, dist := analysis.SingleByteXor(ctxtBytes)
 	log.Printf("Most likely key: %x, distance = %f\nMessage: %s", key, dist, msg)
 }
 
@@ -87,7 +89,7 @@ func DetectSingleByteXor() {
 	var bestKey byte
 	var bestMsg []byte
 	for _, ctxt := range ctxts {
-		msg, key, dist := cryptanalysis.SingleByteXor(ctxt)
+		msg, key, dist := analysis.SingleByteXor(ctxt)
 		if dist < bestDist {
 			bestDist = dist
 			bestKey = key
@@ -96,6 +98,41 @@ func DetectSingleByteXor() {
 	}
 
 	log.Printf("Most likely Key = %x, distance = %f\nPlaintext = %s", bestKey, bestDist, bestMsg)
+}
+
+func RepeatingKeyXor() {
+	header(5, "Implementing repeating-key XOR")
+
+	input := []byte("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
+	key := []byte("ICE")
+
+	out := bitwise.Xor(input, key)
+	log.Printf("Encoded %s to %x", input, out)
+}
+
+func BreakRepeatingKeyXor() {
+	header(6, "Break repeating-key XOR")
+
+	file, err := os.Open("../data/6.txt")
+	if err != nil {
+		log.Fatalf("Error reading data/6.txt: %v", err)
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		log.Fatalf("Error reading from data/6.txt: %v", err)
+	}
+
+	ctxt := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+	n, err := base64.StdEncoding.Decode(ctxt, data)
+	if err != nil {
+		log.Fatalf("Error decoding base64: %v", err)
+	}
+	ctxt = ctxt[:n]
+
+	msg, key, distance := analysis.RepeatingByteXor(ctxt)
+	log.Printf("Recovered key = %x, distance = %f, message = %s", key, distance, msg)
 }
 
 func header(id int, name string) {
