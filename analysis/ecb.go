@@ -1,7 +1,10 @@
 package analysis
 
+// AesBlockSize defines the block size, in bytes, of AES
 const AesBlockSize = 16
 
+// AesBlock is a block of ciphertext or plaintext which can be fed into
+// the AES block cipher.
 type AesBlock [AesBlockSize]byte
 
 // DetectEcb attempts to detect if the provided ciphertext is the result of AES
@@ -38,9 +41,9 @@ func DetectEcb(ctxt []byte) bool {
 		if ok {
 			// Block seen before
 			return true
-		} else {
-			seenBlocks[block] = true
 		}
+
+		seenBlocks[block] = true
 	}
 
 	return false

@@ -36,6 +36,11 @@ func evaluateSingleByteXor(ctxt []byte, key byte) (msg []byte, distance float64)
 	return msg, distance
 }
 
+// RepeatingByteXor attempts to break a ciphertext analyzed with repeating-key
+// XOR. It works only for English (or suffiicently similar) plaintexts.
+//
+// In a first step the likely key size is determined, then each of the key's
+// bytes is determined in isolation.
 func RepeatingByteXor(ctxt []byte) (msg []byte, key []byte, distance float64) {
 	keySize, dist := findRepeatingByteXorKeysize(ctxt)
 	log.Printf("Guessed key size = %d, distance = %f", keySize, dist)
@@ -86,7 +91,7 @@ func findRepeatingByteXorKeysize(ctxt []byte) (int, float64) {
 	}
 
 	// Average and normalize distances
-	for keySize, _ := range distances {
+	for keySize := range distances {
 		// There are 3+2+1 = 7 possible (unordered) pairs of two blocks, when picking from four.
 		distances[keySize] /= 7
 		distances[keySize] /= float64(keySize)

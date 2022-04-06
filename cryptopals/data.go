@@ -11,16 +11,26 @@ import (
 	"github.com/Lavode/cryptopals/sliceutil"
 )
 
-const DATA_ROOT = "data"
+const dataRoot = "data"
 
+// DataEncoding specifies the encoding of data in a file.
 type DataEncoding int
 
 const (
+	// Base64 refers to binary data encoded with standard Base64 encoding
+	// defined in RFC4648.
 	Base64 DataEncoding = iota
+	// Hex refers to binary data encoded as a hexadecimal string.
 	Hex
+	// Plain refers to unencoded binary data.
 	Plain
 )
 
+// GetLines loads data stored in a file, splitting it by Unix-style ASCII
+// newlines (that is the 0xA byte). It decodes the data based on the specified
+// encoding, returning the resulting binary data.
+//
+// Splitting happens on Linux-style ASCII newlines, that is the 0xA byte.
 func GetLines(challenge int, encoding DataEncoding) ([][]byte, error) {
 	path := pathFor(challenge)
 	encData, err := readFromFile(path)
@@ -43,6 +53,8 @@ func GetLines(challenge int, encoding DataEncoding) ([][]byte, error) {
 	return lines, nil
 }
 
+// GetData loads data stored in a file. It decodes the data based on the
+// specified encoding, and returns the resulting binary.data.
 func GetData(challenge int, encoding DataEncoding) ([]byte, error) {
 	path := pathFor(challenge)
 	encData, err := readFromFile(path)
@@ -87,7 +99,7 @@ func pathFor(challenge int) string {
 	// Executable lives within the `cryptopals` directory, so we'll need to
 	// navigate one level up.
 	file := fmt.Sprintf("%d.txt", challenge)
-	return filepath.Join("..", DATA_ROOT, file)
+	return filepath.Join("..", dataRoot, file)
 }
 
 func decodeBase64(encData []byte) ([]byte, error) {

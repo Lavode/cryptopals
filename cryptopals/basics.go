@@ -2,27 +2,29 @@ package main
 
 import (
 	"crypto/aes"
+	"encoding/base64"
 	"encoding/hex"
 	"log"
 
 	"github.com/Lavode/cryptopals/analysis"
 	"github.com/Lavode/cryptopals/bitwise"
-	"github.com/Lavode/cryptopals/convert"
 )
 
-func HexToBase64() {
+func hexToBase64() {
 	header(1, "Convert hex to base64")
 
 	in := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
-	out, err := convert.HexToBase64(in)
+	bytes, err := hex.DecodeString(in)
 	if err != nil {
-		log.Fatalf("Error converting hex to base64: %v", err)
+		log.Fatalf("Error decoding hex string: %v", err)
 	}
 
-	log.Printf("Converted hex value %s to base64: %s", in, out)
+	out := base64.StdEncoding.EncodeToString(bytes)
+
+	log.Printf("Converted hex value %s (= %s) to base64: %s", in, bytes, out)
 }
 
-func FixedXor() {
+func fixedXor() {
 	header(2, "Fixed XOR")
 
 	a := "1c0111001f010100061a024b53535009181c"
@@ -43,7 +45,7 @@ func FixedXor() {
 	log.Printf("%s XOR %s = %s", a, b, xorEnc)
 }
 
-func SingleByteXor() {
+func singleByteXor() {
 	header(3, "Single-byte XOR cipher")
 
 	ctxt := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
@@ -56,7 +58,7 @@ func SingleByteXor() {
 	log.Printf("Most likely key: %x, distance = %f\nMessage: %s", key, dist, msg)
 }
 
-func DetectSingleByteXor() {
+func detectSingleByteXor() {
 	header(4, "Detect single-character XOR")
 
 	ctxts, err := GetLines(4, Hex)
@@ -79,7 +81,7 @@ func DetectSingleByteXor() {
 	log.Printf("Most likely Key = %x, distance = %f\nPlaintext = %s", bestKey, bestDist, bestMsg)
 }
 
-func RepeatingKeyXor() {
+func repeatingKeyXor() {
 	header(5, "Implementing repeating-key XOR")
 
 	input := []byte("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
@@ -89,7 +91,7 @@ func RepeatingKeyXor() {
 	log.Printf("Encoded %s to %x", input, out)
 }
 
-func BreakRepeatingKeyXor() {
+func breakRepeatingKeyXor() {
 	header(6, "Break repeating-key XOR")
 
 	ctxt, err := GetData(6, Base64)
@@ -101,7 +103,7 @@ func BreakRepeatingKeyXor() {
 	log.Printf("Recovered key = %x, distance = %f, message = %s", key, distance, msg)
 }
 
-func DecryptAesECB() {
+func decryptAesECB() {
 	header(7, "AES in ECB mode")
 
 	aes, err := aes.NewCipher([]byte("YELLOW SUBMARINE"))
@@ -129,7 +131,7 @@ func DecryptAesECB() {
 	log.Printf("Decrypted message to:\n%s", msg)
 }
 
-func DetectAesEcb() {
+func detectAesEcb() {
 	header(8, "Detect AES in ECB mode")
 
 	ctxts, err := GetLines(8, Hex)

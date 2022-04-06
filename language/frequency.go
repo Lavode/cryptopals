@@ -7,9 +7,12 @@ import (
 	"github.com/Lavode/cryptopals/sliceutil"
 )
 
+// FrequencyHistogram is a normalized histogram of the relative frequencies of
+// runes in a string.
 type FrequencyHistogram map[rune]float64
 
-// Typical frequencies of single letters in the English language.
+// EnglishMonographFrequencies defines the typical frequencies of single
+// letters in the English language.
 //
 // Taken from http://www.practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/
 // Statistics for the space (32) were added manually, using an estimated

@@ -7,51 +7,42 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 3 {
+	if len(os.Args) != 2 {
 		usage()
 	}
 
-	set, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		fmt.Printf("Invalid set\n")
-		os.Exit(1)
-	}
-
-	challenge, err := strconv.Atoi(os.Args[2])
+	challenge, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		fmt.Printf("Invalid challenge\n")
 		os.Exit(1)
 	}
 
-	switch set {
+	switch challenge {
 	case 1:
-		switch challenge {
-		case 1:
-			HexToBase64()
-		case 2:
-			FixedXor()
-		case 3:
-			SingleByteXor()
-		case 4:
-			DetectSingleByteXor()
-		case 5:
-			RepeatingKeyXor()
-		case 6:
-			BreakRepeatingKeyXor()
-		case 7:
-			DecryptAesECB()
-		case 8:
-			DetectAesEcb()
-		default:
-			fmt.Println("Challenge outside of allowed range for given set")
-		}
+		hexToBase64()
+	case 2:
+		fixedXor()
+	case 3:
+		singleByteXor()
+	case 4:
+		detectSingleByteXor()
+	case 5:
+		repeatingKeyXor()
+	case 6:
+		breakRepeatingKeyXor()
+	case 7:
+		decryptAesECB()
+	case 8:
+		detectAesEcb()
+	case 9:
+		pkcs7Padding()
 	default:
-		fmt.Println("Set outside of allowed range.")
+		fmt.Println("Challenge outside of allowed range")
 	}
 }
 
 func usage() {
-	fmt.Printf("Usage: ./cryptopals <set> <challenge>\n")
-	fmt.Printf("Example: ./cryptopals 1 3\n")
+	fmt.Printf("Usage: ./cryptopals <challenge>\n")
+	fmt.Printf("Example: ./cryptopals 3\n")
 	os.Exit(1)
 }
