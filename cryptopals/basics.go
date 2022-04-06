@@ -1,13 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"crypto/aes"
-	"encoding/base64"
 	"encoding/hex"
-	"io"
 	"log"
-	"os"
 
 	"github.com/Lavode/cryptopals/analysis"
 	"github.com/Lavode/cryptopals/bitwise"
@@ -63,27 +59,9 @@ func SingleByteXor() {
 func DetectSingleByteXor() {
 	header(4, "Detect single-character XOR")
 
-	file, err := os.Open("../data/4.txt")
+	ctxts, err := GetLines(4, Hex)
 	if err != nil {
-		log.Fatalf("Error reading data/4.txt: %v", err)
-	}
-	defer file.Close()
-
-	ctxts := make([][]byte, 0)
-	scanner := bufio.NewScanner(file)
-	i := 0
-	for scanner.Scan() {
-		i++
-		hexString := scanner.Text()
-		ctxt, err := hex.DecodeString(hexString)
-		if err != nil {
-			log.Fatalf("Error decoding hex: %v", err)
-		}
-		ctxts = append(ctxts, ctxt)
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatalf("Error reading from file: %v", err)
+		log.Fatal(err)
 	}
 
 	var bestDist float64 = 2
@@ -114,23 +92,10 @@ func RepeatingKeyXor() {
 func BreakRepeatingKeyXor() {
 	header(6, "Break repeating-key XOR")
 
-	file, err := os.Open("../data/6.txt")
+	ctxt, err := GetData(6, Base64)
 	if err != nil {
-		log.Fatalf("Error reading data/6.txt: %v", err)
+		log.Fatal(err)
 	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatalf("Error reading from data/6.txt: %v", err)
-	}
-
-	ctxt := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
-	n, err := base64.StdEncoding.Decode(ctxt, data)
-	if err != nil {
-		log.Fatalf("Error decoding base64: %v", err)
-	}
-	ctxt = ctxt[:n]
 
 	msg, key, distance := analysis.RepeatingByteXor(ctxt)
 	log.Printf("Recovered key = %x, distance = %f, message = %s", key, distance, msg)
@@ -144,23 +109,10 @@ func DecryptAesECB() {
 		log.Fatalf("Error instantiating AES: %v", err)
 	}
 
-	file, err := os.Open("../data/7.txt")
+	ctxt, err := GetData(7, Base64)
 	if err != nil {
-		log.Fatalf("Error reading data/7.txt")
+		log.Fatal(err)
 	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatalf("Error reading from data/7.txt: %v", err)
-	}
-
-	ctxt := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
-	n, err := base64.StdEncoding.Decode(ctxt, data)
-	if err != nil {
-		log.Fatalf("Error decoding base64: %v", err)
-	}
-	ctxt = ctxt[:n]
 
 	if len(ctxt)%16 != 0 {
 		log.Fatalf("Ciphertext length must be a multiple of 16, but got %d", len(ctxt))
