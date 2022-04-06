@@ -5,6 +5,7 @@ import (
 
 	"github.com/Lavode/cryptopals/bitwise"
 	"github.com/Lavode/cryptopals/language"
+	"github.com/Lavode/cryptopals/sliceutil"
 )
 
 // SingleByteXor attempts to recover key and message of a single-byte XOR
@@ -37,9 +38,29 @@ func evaluateSingleByteXor(ctxt []byte, key byte) (msg []byte, distance float64)
 
 func RepeatingByteXor(ctxt []byte) (msg []byte, key []byte, distance float64) {
 	keySize, dist := findRepeatingByteXorKeysize(ctxt)
-
 	log.Printf("Guessed key size = %d, distance = %f", keySize, dist)
 
+	key = make([]byte, keySize)
+	msg = make([]byte, len(ctxt))
+
+	// Split ciphertext into 'columns' of bytes which are all encrypted
+	// with the same byte of the key.
+	ctxtColumns := sliceutil.Alternating(ctxt, keySize)
+	for i, ctxtCol := range ctxtColumns {
+		// Each column is now encoded with a single-byte XOR, so we'll use that to break it
+		msgCol, keyByte, keyDist := SingleByteXor(ctxtCol)
+		distance += keyDist
+		key[i] = keyByte
+
+		// Store the bytes of the message column in the appropriate
+		// place in the full message.
+		for j, m := range msgCol {
+			msg[j*keySize+i] = m
+		}
+	}
+
+	// We'll just report the average distance
+	distance /= float64(keySize)
 	return msg, key, distance
 }
 
