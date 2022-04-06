@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"io"
@@ -133,6 +134,47 @@ func BreakRepeatingKeyXor() {
 
 	msg, key, distance := analysis.RepeatingByteXor(ctxt)
 	log.Printf("Recovered key = %x, distance = %f, message = %s", key, distance, msg)
+}
+
+func DecryptAesECB() {
+	header(7, "AES in ECB mode")
+
+	aes, err := aes.NewCipher([]byte("YELLOW SUBMARINE"))
+	if err != nil {
+		log.Fatalf("Error instantiating AES: %v", err)
+	}
+
+	file, err := os.Open("../data/7.txt")
+	if err != nil {
+		log.Fatalf("Error reading data/7.txt")
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		log.Fatalf("Error reading from data/7.txt: %v", err)
+	}
+
+	ctxt := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+	n, err := base64.StdEncoding.Decode(ctxt, data)
+	if err != nil {
+		log.Fatalf("Error decoding base64: %v", err)
+	}
+	ctxt = ctxt[:n]
+
+	if len(ctxt)%16 != 0 {
+		log.Fatalf("Ciphertext length must be a multiple of 16, but got %d", len(ctxt))
+	}
+	msg := make([]byte, len(ctxt))
+
+	for i := 0; i < len(ctxt)/16; i++ {
+		aes.Decrypt(
+			msg[i*16:(i+1)*16],
+			ctxt[i*16:(i+1)*16],
+		)
+	}
+
+	log.Printf("Decrypted message to:\n%s", msg)
 }
 
 func header(id int, name string) {
