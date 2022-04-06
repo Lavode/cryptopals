@@ -2,17 +2,15 @@ package padding
 
 import "fmt"
 
-const BlockSize = 16
-
-// PKCS7Pad pads the message according to PKCS#7 padding to a multiple of 16
-// bytes.
+// PKCS7Pad pads the message to the next multiple of the given length by using
+// PKCS#7 padding.
 //
 // It does so by adding x bytes of value x, where x is the number required to
 // get to the *next larger* multiple of 16. This means that a message with a
 // length which already is a multiple of 16 will be padded with 16 bytes of
 // value 0x10.
-func PKCS7Pad(msg []byte) []byte {
-	padBytes := BlockSize - (len(msg) % BlockSize)
+func PKCS7Pad(msg []byte, length int) []byte {
+	padBytes := length - (len(msg) % length)
 
 	padded := make([]byte, len(msg)+padBytes)
 	copy(padded, msg)
