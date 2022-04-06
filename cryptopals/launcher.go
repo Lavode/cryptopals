@@ -40,6 +40,8 @@ func main() {
 			BreakRepeatingKeyXor()
 		case 7:
 			DecryptAesECB()
+		case 8:
+			DetectAesEcb()
 		default:
 			fmt.Println("Challenge outside of allowed range for given set")
 		}

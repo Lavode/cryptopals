@@ -129,6 +129,22 @@ func DecryptAesECB() {
 	log.Printf("Decrypted message to:\n%s", msg)
 }
 
+func DetectAesEcb() {
+	header(8, "Detect AES in ECB mode")
+
+	ctxts, err := GetLines(8, Hex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, ctxt := range ctxts {
+		if analysis.DetectEcb(ctxt) {
+			log.Printf("Ciphertext %x is likely ECB encryption", ctxt)
+		}
+	}
+
+}
+
 func header(id int, name string) {
 	log.Printf("==== Challenge %d: %s ====", id, name)
 }
