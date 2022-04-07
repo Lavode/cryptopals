@@ -1,13 +1,13 @@
 package main
 
 import (
-	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"log"
 
 	"github.com/Lavode/cryptopals/analysis"
 	"github.com/Lavode/cryptopals/bitwise"
+	"github.com/Lavode/cryptopals/cipher"
 )
 
 func hexToBase64() {
@@ -106,26 +106,17 @@ func breakRepeatingKeyXor() {
 func decryptAesECB() {
 	header(7, "AES in ECB mode")
 
-	aes, err := aes.NewCipher([]byte("YELLOW SUBMARINE"))
-	if err != nil {
-		log.Fatalf("Error instantiating AES: %v", err)
-	}
+	key := []byte("YELLOW SUBMARINE")
 
 	ctxt, err := GetData(7, Base64)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if len(ctxt)%16 != 0 {
-		log.Fatalf("Ciphertext length must be a multiple of 16, but got %d", len(ctxt))
-	}
-	msg := make([]byte, len(ctxt))
+	msg, err := cipher.AESECBDecrypt(ctxt, key)
 
-	for i := 0; i < len(ctxt)/16; i++ {
-		aes.Decrypt(
-			msg[i*16:(i+1)*16],
-			ctxt[i*16:(i+1)*16],
-		)
+	if err != nil {
+		log.Fatalf("Error decrypting AES ciphertext: %v", err)
 	}
 
 	log.Printf("Decrypted message to:\n%s", msg)
@@ -140,9 +131,10 @@ func detectAesEcb() {
 	}
 
 	for _, ctxt := range ctxts {
-		if analysis.DetectEcb(ctxt) {
+		if analysis.DetectECB(ctxt) {
 			log.Printf("Ciphertext %x is likely ECB encryption", ctxt)
 		}
+
 	}
 
 }

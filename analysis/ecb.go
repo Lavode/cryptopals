@@ -1,13 +1,13 @@
 package analysis
 
-// AesBlockSize defines the block size, in bytes, of AES
-const AesBlockSize = 16
+// AESBlockSize defines the block size, in bytes, of AES
+const AESBlockSize = 16
 
-// AesBlock is a block of ciphertext or plaintext which can be fed into
+// AESBlock is a block of ciphertext or plaintext which can be fed into
 // the AES block cipher.
-type AesBlock [AesBlockSize]byte
+type AESBlock [AESBlockSize]byte
 
-// DetectEcb attempts to detect if the provided ciphertext is the result of AES
+// DetectECB attempts to detect if the provided ciphertext is the result of AES
 // in ECB mode.
 //
 // It does so by checking if any two blocks of ciphertext are equal. As such
@@ -21,9 +21,9 @@ type AesBlock [AesBlockSize]byte
 //
 // Similarly there is a possibility of a false negative, which will happen if
 // the original plaintext message had no repeating blocks.
-func DetectEcb(ctxt []byte) bool {
+func DetectECB(ctxt []byte) bool {
 	// AES in ECB mode is guaranteed to produce block-aligned ciphertexts
-	if len(ctxt)%AesBlockSize != 0 {
+	if len(ctxt)%AESBlockSize != 0 {
 		return false
 	}
 
@@ -32,11 +32,11 @@ func DetectEcb(ctxt []byte) bool {
 	// from uniform random had been used, then the probability of two 16
 	// byte blocks being equal is 2^(-128), which is negligible.
 
-	seenBlocks := make(map[AesBlock]bool)
-	for i := 0; i < len(ctxt)/AesBlockSize; i++ {
-		block := [AesBlockSize]byte{}
+	seenBlocks := make(map[AESBlock]bool)
+	for i := 0; i < len(ctxt)/AESBlockSize; i++ {
+		block := [AESBlockSize]byte{}
 
-		copy(block[:], ctxt[i*AesBlockSize:(i+1)*AesBlockSize])
+		copy(block[:], ctxt[i*AESBlockSize:(i+1)*AESBlockSize])
 		_, ok := seenBlocks[block]
 		if ok {
 			// Block seen before
