@@ -3,7 +3,7 @@ package cipher
 import (
 	"testing"
 
-	"github.com/Lavode/cryptopals/expect"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAESECBEncryptAndDecrypt(t *testing.T) {
@@ -35,10 +35,10 @@ It is also a multiple of 16 bytes. Fun!!
 	key := []byte("YELLOW SUBMARINE")
 
 	ctxt, err := AESECBEncrypt(expectedMsg, key)
-	expect.NoError(t, err)
-	expect.Equals(t, expectedCtxt, ctxt)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedCtxt, ctxt)
 
 	msg, err := AESECBDecrypt(ctxt, key)
-	expect.NoError(t, err)
-	expect.Equals(t, expectedMsg, msg)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMsg, msg)
 }

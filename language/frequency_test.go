@@ -3,12 +3,12 @@ package language
 import (
 	"testing"
 
-	"github.com/Lavode/cryptopals/expect"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFrequencyAnalysis(t *testing.T) {
 	s := "Hello world, how are you on this wonderful day"
-	expected := FrequencyHistogram{
+	asserted := FrequencyHistogram{
 		104: 0.06521739130434782,
 		101: 0.06521739130434782,
 		108: 0.08695652173913043,
@@ -28,7 +28,7 @@ func TestFrequencyAnalysis(t *testing.T) {
 		102: 0.021739130434782608,
 	}
 	out := FrequencyAnalysis(s)
-	expect.Equals(t, expected, out)
+	assert.Equal(t, asserted, out)
 }
 
 func TestHistogramDifference(t *testing.T) {
@@ -55,7 +55,7 @@ func TestHistogramDifference(t *testing.T) {
 		100: 0.05,
 	}
 
-	expect.Equals(t, 0.0, HistogramDifference(a, a))
-	expect.Equals(t, 1.0, HistogramDifference(a, b))
-	expect.Equals(t, 0.35631035439043124, HistogramDifference(a, c))
+	assert.Equal(t, 0.0, HistogramDifference(a, a))
+	assert.Equal(t, 1.0, HistogramDifference(a, b))
+	assert.Equal(t, 0.35631035439043124, HistogramDifference(a, c))
 }

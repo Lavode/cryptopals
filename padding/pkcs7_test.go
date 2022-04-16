@@ -3,7 +3,7 @@ package padding
 import (
 	"testing"
 
-	"github.com/Lavode/cryptopals/expect"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPKCS7PadAndUnpad(t *testing.T) {
@@ -12,11 +12,11 @@ func TestPKCS7PadAndUnpad(t *testing.T) {
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
 		0x06, 0x06, 0x06, 0x06, 0x06, 0x06,
 	}
-	expect.Equals(t, padded, PKCS7Pad(msg, 16))
+	assert.Equal(t, padded, PKCS7Pad(msg, 16))
 
 	unpadded, err := PKCS7Unpad(padded)
-	expect.NoError(t, err)
-	expect.Equals(t, msg, unpadded)
+	assert.Nil(t, err)
+	assert.Equal(t, msg, unpadded)
 
 	// Block-aligned message padded with full block.
 	msg = []byte{
@@ -29,11 +29,11 @@ func TestPKCS7PadAndUnpad(t *testing.T) {
 		0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
 		0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
 	}
-	expect.Equals(t, padded, PKCS7Pad(msg, 16))
+	assert.Equal(t, padded, PKCS7Pad(msg, 16))
 
 	unpadded, err = PKCS7Unpad(padded)
-	expect.NoError(t, err)
-	expect.Equals(t, msg, unpadded)
+	assert.Nil(t, err)
+	assert.Equal(t, msg, unpadded)
 
 	// Empty message padded to full block.
 	msg = []byte{}
@@ -41,22 +41,22 @@ func TestPKCS7PadAndUnpad(t *testing.T) {
 		0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
 		0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
 	}
-	expect.Equals(t, padded, PKCS7Pad(msg, 16))
+	assert.Equal(t, padded, PKCS7Pad(msg, 16))
 
 	unpadded, err = PKCS7Unpad(padded)
-	expect.NoError(t, err)
-	expect.Equals(t, msg, unpadded)
+	assert.Nil(t, err)
+	assert.Equal(t, msg, unpadded)
 
 	msg = []byte("YELLOW SUBMARINE")
 	padded = []byte{
 		0x59, 0x45, 0x4c, 0x4c, 0x4f, 0x57, 0x20, 0x53, 0x55, 0x42, 0x4d, 0x41, 0x52, 0x49, 0x4e, 0x45,
 		0x04, 0x04, 0x04, 0x04,
 	}
-	expect.Equals(t, padded, PKCS7Pad(msg, 20))
+	assert.Equal(t, padded, PKCS7Pad(msg, 20))
 
 	unpadded, err = PKCS7Unpad(padded)
-	expect.NoError(t, err)
-	expect.Equals(t, msg, unpadded)
+	assert.Nil(t, err)
+	assert.Equal(t, msg, unpadded)
 }
 
 func TestPKCS7UnpadInvalidPadding(t *testing.T) {
@@ -65,12 +65,12 @@ func TestPKCS7UnpadInvalidPadding(t *testing.T) {
 		0x05, 0x06, 0x06, 0x06, 0x06, 0x06,
 	}
 	_, err := PKCS7Unpad(padded)
-	expect.Error(t, err)
+	assert.Error(t, err)
 
 	padded = []byte{
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
 		0x06, 0x06, 0x06, 0x06, 0x06, 0x05,
 	}
 	_, err = PKCS7Unpad(padded)
-	expect.Error(t, err)
+	assert.Error(t, err)
 }

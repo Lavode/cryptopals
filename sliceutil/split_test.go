@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Lavode/cryptopals/expect"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAlternating(t *testing.T) {
 	in := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
 
-	expect.Equals(
+	assert.Equal(
 		t,
 		[][]int{in},
 		Alternating(in, 1),
 	)
 
-	expect.Equals(
+	assert.Equal(
 		t,
 		[][]int{
 			[]int{1, 4, 7, 10, 13},
@@ -35,7 +35,7 @@ func ExampleAlternating() {
 
 func TestSplit(t *testing.T) {
 	in := []int{1, 2, 5, 3, 5, 7, 8, 9, 5, 5}
-	expect.Equals(
+	assert.Equal(
 		t,
 		[][]int{
 			[]int{1, 2},
@@ -48,7 +48,7 @@ func TestSplit(t *testing.T) {
 	)
 
 	in2 := []byte{0x20, 0x10, 0x15, 0x20, 0x12}
-	expect.Equals(
+	assert.Equal(
 		t,
 		[][]byte{
 			[]byte{},
@@ -61,7 +61,7 @@ func TestSplit(t *testing.T) {
 
 func TestSplitEmptyInput(t *testing.T) {
 	in := []string{}
-	expect.Equals(
+	assert.Equal(
 		t,
 		[][]string{in},
 		Split(in, " "),
@@ -70,7 +70,7 @@ func TestSplitEmptyInput(t *testing.T) {
 
 func TestSplitSeparatorNotPresent(t *testing.T) {
 	in := []int{1, 2, 3, 4}
-	expect.Equals(
+	assert.Equal(
 		t,
 		[][]int{in},
 		Split(in, 5),
