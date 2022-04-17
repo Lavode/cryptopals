@@ -7,11 +7,13 @@ import (
 	"fmt"
 )
 
-// We're only supporting AES-128 for now.
-const aesKeySize = 16
+// AESKeySize specifies the length of an AES-128 key in bytes.
+//
+// No other members of the AES family of functions are supported for now.
+const AESKeySize = 16
 
-// AES' block size is 16 bytes for all the AES-x block ciphers.
-const aesBlockSize = 16
+// AESBlockSize specifies the length of an AES block in bytes.
+const AESBlockSize = 16
 
 func newAES(key []byte) (cipher.Block, error) {
 	aes, err := aes.NewCipher(key)
@@ -33,7 +35,7 @@ func newAES(key []byte) (cipher.Block, error) {
 // An error is returned if the underlying CSPRNG failed to provide a sufficient
 // amount of random bytes.
 func NewKey() (key []byte, err error) {
-	key = make([]byte, aesKeySize)
+	key = make([]byte, AESKeySize)
 
 	_, err = rand.Read(key)
 	if err != nil {

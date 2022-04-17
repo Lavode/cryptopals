@@ -17,10 +17,10 @@ type AESECB struct {
 //
 // The key must be exactly 16 bytes in size.
 func (ecb *AESECB) Encrypt(msg []byte) (ctxt []byte, err error) {
-	if len(msg)%aesBlockSize != 0 {
+	if len(msg)%AESBlockSize != 0 {
 		return []byte{}, fmt.Errorf(
 			"Message must be a multiple of AES blocksize %d, but was %d",
-			aesBlockSize,
+			AESBlockSize,
 			len(msg),
 		)
 	}
@@ -31,11 +31,11 @@ func (ecb *AESECB) Encrypt(msg []byte) (ctxt []byte, err error) {
 	}
 
 	ctxt = make([]byte, len(msg))
-	for i := 0; i < len(msg)/aesBlockSize; i++ {
-		blockStart := i * aesBlockSize
+	for i := 0; i < len(msg)/AESBlockSize; i++ {
+		blockStart := i * AESBlockSize
 		aes.Encrypt(
-			ctxt[blockStart:blockStart+aesBlockSize],
-			msg[blockStart:blockStart+aesBlockSize],
+			ctxt[blockStart:blockStart+AESBlockSize],
+			msg[blockStart:blockStart+AESBlockSize],
 		)
 	}
 
@@ -50,10 +50,10 @@ func (ecb *AESECB) Encrypt(msg []byte) (ctxt []byte, err error) {
 //
 // The key must be exactly 16 bytes in size.
 func (ecb *AESECB) Decrypt(ctxt []byte) (msg []byte, err error) {
-	if len(ctxt)%aesBlockSize != 0 {
+	if len(ctxt)%AESBlockSize != 0 {
 		return []byte{}, fmt.Errorf(
 			"Ciphertext must be a multiple of AES blocksize %d, but was %d",
-			aesBlockSize,
+			AESBlockSize,
 			len(ctxt),
 		)
 	}
@@ -64,11 +64,11 @@ func (ecb *AESECB) Decrypt(ctxt []byte) (msg []byte, err error) {
 	}
 
 	msg = make([]byte, len(ctxt))
-	for i := 0; i < len(ctxt)/aesBlockSize; i++ {
-		blockStart := i * aesBlockSize
+	for i := 0; i < len(ctxt)/AESBlockSize; i++ {
+		blockStart := i * AESBlockSize
 		aes.Decrypt(
-			msg[blockStart:blockStart+aesBlockSize],
-			ctxt[blockStart:blockStart+aesBlockSize],
+			msg[blockStart:blockStart+AESBlockSize],
+			ctxt[blockStart:blockStart+AESBlockSize],
 		)
 	}
 

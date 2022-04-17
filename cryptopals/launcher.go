@@ -38,6 +38,8 @@ func main() {
 		pkcs7Padding()
 	case 10:
 		cbcDecrypt()
+	case 11:
+		ecbCbcOracle()
 	default:
 		fmt.Println("Challenge outside of allowed range")
 	}
