@@ -28,7 +28,8 @@ func cbcDecrypt() {
 	// IV is all zeroes
 	iv := make([]byte, 16)
 
-	msg, err := cipher.AESCBCDecrypt(ctxt, key, iv)
+	aes := cipher.AESCBC{Key: key, IV: iv}
+	msg, err := aes.Decrypt(ctxt)
 	if err != nil {
 		log.Fatalf("Error decrypting AES-CBC ciphertext: %v", err)
 	}

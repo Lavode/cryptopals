@@ -113,7 +113,8 @@ func decryptAesECB() {
 		log.Fatal(err)
 	}
 
-	msg, err := cipher.AESECBDecrypt(ctxt, key)
+	aes := cipher.AESECB{Key: key}
+	msg, err := aes.Decrypt(ctxt)
 
 	if err != nil {
 		log.Fatalf("Error decrypting AES ciphertext: %v", err)
