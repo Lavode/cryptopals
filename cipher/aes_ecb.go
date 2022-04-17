@@ -2,6 +2,10 @@ package cipher
 
 import "fmt"
 
+// AESECB encapsulates an instance of the AES-128 block cipher in ECB mode.
+//
+// The key must be chosen as a random byte slice of length 16, as done by e.g
+// NewKey(), and be kept secret.
 type AESECB struct {
 	Key []byte
 }

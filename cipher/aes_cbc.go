@@ -6,11 +6,24 @@ import (
 	"github.com/Lavode/cryptopals/bitwise"
 )
 
+// AESCBC encapsulates an instance of the AES-128 block cipher in CBC mode.
+//
+// The key must be chosen as a random byte slice of length 16, as done by e.g
+// NewKey(), and be kept secret.
+// The IV must be chosen as a random byte slice of length 16 and may not be
+// reused across multiple encryptions. It need however not be kept secret, and
+// can be transmitted in public along with the ciphertext.
 type AESCBC struct {
 	Key []byte
 	IV  []byte
 }
 
+// Encrypt encrypts the message with the AES-128 block cipher in CBC mode.
+//
+// The length of the message must be a multiple of AES-128's blocksize of 16
+// bytes. Apply a padding if it is not.
+//
+// The key must be exactly 16 bytes in size.
 func (cbc *AESCBC) Encrypt(msg []byte) (ctxt []byte, err error) {
 	if len(msg)%aesBlockSize != 0 {
 		return []byte{}, fmt.Errorf(
@@ -64,6 +77,13 @@ func (cbc *AESCBC) Encrypt(msg []byte) (ctxt []byte, err error) {
 
 }
 
+// Decrypt decrypts the ciphertext with the AES-128 block cipher in ECB
+// mode.
+//
+// The length of the ciphertet must be a multiple of AES-128's blocksize of 16
+// bytes.
+//
+// The key must be exactly 16 bytes in size.
 func (cbc *AESCBC) Decrypt(ctxt []byte) (msg []byte, err error) {
 	if len(ctxt)%aesBlockSize != 0 {
 		return []byte{}, fmt.Errorf(
