@@ -36,6 +36,8 @@ func main() {
 		detectAesEcb()
 	case 9:
 		pkcs7Padding()
+	case 10:
+		cbcDecrypt()
 	default:
 		fmt.Println("Challenge outside of allowed range")
 	}
