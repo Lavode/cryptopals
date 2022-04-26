@@ -2,7 +2,6 @@ package analysis
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Lavode/cryptopals/cipher"
 	"github.com/Lavode/cryptopals/oracle"
@@ -60,44 +59,51 @@ func DetectECB(ctxt []byte) bool {
 // DecryptECBPostfix attempts to decrypt an unkonwn ECB postfix, given access to an
 // encryption oracle providing encryptions of a chosen infix.
 func DecryptECBPostfix(oracle *oracle.ECBInfix, blockSize int) ([]byte, error) {
-	var postfix []byte
-
 	postfixLength, err := DetectECBPostfixLength(oracle, blockSize)
 	if err != nil {
-		return postfix, err
+		return []byte{}, err
 	}
-	log.Printf("Detected length of unknown postfix: %dB", postfixLength)
-	postfix = make([]byte, 0, postfixLength)
+	recoveredPostfixLength := 0
 
-	// For the first 16 bytes we'll care about the first ciphertext block,
-	// for the next 16 bytes about the second, and so on.
-	relevantCtxtBlock := 0
-	// We'll start with a known message one block shy of a full block.
+	// We'll start with a (known) message one block shy of a full block.
 	knownMessage := make([]byte, blockSize-1)
-	for {
-		for i := 15; i >= 0; i-- {
-			msg := make([]byte, i)
-			ctxt, err := oracle.Encrypt(msg)
-			if err != nil {
-				return postfix, fmt.Errorf("Error querying oracle: %v", err)
-			}
+	msg := make([]byte, blockSize-1)
 
-			knownBlock := knownMessage[len(knownMessage)-blockSize+1:]
-
-			postfixByte, err := bruteForceByte(oracle, knownBlock, ctxt.Block(relevantCtxtBlock), blockSize)
-			if err != nil {
-				return postfix, err
-			}
-
-			postfix = append(postfix, postfixByte)
-			knownMessage = append(knownMessage, postfixByte)
-			if len(postfix) == postfixLength {
-				return postfix, nil
-			}
+	for recoveredPostfixLength < postfixLength {
+		ctxt, err := oracle.Encrypt(msg)
+		if err != nil {
+			return []byte{}, fmt.Errorf("Error querying oracle: %v", err)
 		}
 
-		relevantCtxtBlock++
+		knownBlock := knownMessage[len(knownMessage)-blockSize+1:]
+
+		// For the first 16 bytes we'll care about the first
+		// ciphertext block, for the next 16 bytes about the
+		// second, and so on.
+		relevantCtxtBlock := recoveredPostfixLength / blockSize
+		postfixByte, err := bruteForceByte(oracle, knownBlock, ctxt.Block(relevantCtxtBlock), blockSize)
+		if err != nil {
+			return []byte{}, err
+		}
+
+		recoveredPostfixLength++
+		knownMessage = append(knownMessage, postfixByte)
+
+		// Shrink message we'll pass to the encryption oracle by one,
+		// to ensure that a new byte of the unknown postfix will be in
+		// the last position of the corresponding block.
+		// Alternatively if there's naught left to shrink, reset it
+		// back to full length - above we'll then move on to the next
+		// block of ciphertext.
+		if len(msg) == 0 {
+			msg = make([]byte, 15)
+		} else {
+			msg = msg[:len(msg)-1]
+		}
 	}
+
+	postfix := knownMessage[len(knownMessage)-recoveredPostfixLength:]
+	return postfix, nil
 }
 
 // DetectECBPostfixLength attempts to detect the length of an unknown postfix,
