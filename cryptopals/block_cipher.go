@@ -60,7 +60,7 @@ func ecbCbcOracle() {
 			log.Fatalf("Error querying oracle: %v", err)
 		}
 
-		guessECB := analysis.DetectECB(ctxt)
+		guessECB := analysis.DetectECB(ctxt.Bytes)
 		correct := guessECB == wasECB
 		if correct {
 			correctGuesses++
@@ -76,4 +76,42 @@ func ecbCbcOracle() {
 	}
 	log.Printf("%d / %d attempts correct", attempts, correctGuesses)
 
+}
+
+func ecbByteAtATime() {
+	header(12, "Byte-at-a-time ECB decryption (Simple)")
+
+	// 'Secret' payload we intend to decrypt
+	payload, err := GetData(12, Base64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	oracle := oracle.ECBInfix{Postfix: payload, PrefixLength: 0}
+
+	blockSize, err := analysis.DetectBlockSize(&oracle)
+	if err != nil {
+		log.Fatalf("Error deducing block size: %v", err)
+	}
+	log.Printf("Deduced block size: %dB", blockSize)
+
+	// With four blocks' worth of zero bytes we're guaranteed to have at
+	// least two blocks full of zero bytes in the middle.
+	msg := make([]byte, 4*blockSize)
+	ctxt, err := oracle.Encrypt(msg)
+	if err != nil {
+		log.Fatalf("Error querying oracle: %v", err)
+	}
+
+	usesECB := analysis.DetectECB(ctxt.Bytes)
+	if !usesECB {
+		log.Fatalf("Oracle seems to not use ECB mode")
+	}
+	log.Printf("Oracle seems to be using ECB mode")
+
+	postfix, err := analysis.DecryptECBPostfix(&oracle, blockSize)
+	if err != nil {
+		log.Fatalf("Error decrypting ECB postfix: %v", err)
+	}
+	log.Printf("Decrypted ECB postfix to: %s", postfix)
 }

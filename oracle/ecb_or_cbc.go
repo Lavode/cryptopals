@@ -23,7 +23,7 @@ type ECBOrCBC struct {
 // The key (and IV, in case of CBC) are chosen at random every invocation.
 //
 // Every invocation has a chance of 50% of using either ECB or CBC.
-func (or *ECBOrCBC) Encrypt(msg []byte) (ctxt []byte, err error, wasECB bool) {
+func (or *ECBOrCBC) Encrypt(msg []byte) (ctxt cipher.AESCiphertext, err error, wasECB bool) {
 	key, err := cipher.NewKey()
 	if err != nil {
 		return ctxt, err, wasECB
@@ -55,10 +55,11 @@ func (or *ECBOrCBC) Encrypt(msg []byte) (ctxt []byte, err error, wasECB bool) {
 	if wasECB {
 		ecb := cipher.AESECB{Key: key}
 
-		ctxt, err = ecb.Encrypt(paddedMsg)
+		rawCtxt, err := ecb.Encrypt(paddedMsg)
 		if err != nil {
 			return ctxt, err, wasECB
 		}
+		ctxt.Bytes = rawCtxt
 	} else {
 		iv, err := cipher.NewKey()
 		if err != nil {
@@ -67,10 +68,11 @@ func (or *ECBOrCBC) Encrypt(msg []byte) (ctxt []byte, err error, wasECB bool) {
 
 		cbc := cipher.AESCBC{Key: key, IV: iv}
 
-		ctxt, err = cbc.Encrypt(paddedMsg)
+		rawCtxt, err := cbc.Encrypt(paddedMsg)
 		if err != nil {
 			return ctxt, err, wasECB
 		}
+		ctxt.Bytes = rawCtxt
 	}
 
 	return ctxt, nil, wasECB

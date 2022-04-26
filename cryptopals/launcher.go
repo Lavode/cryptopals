@@ -40,6 +40,8 @@ func main() {
 		cbcDecrypt()
 	case 11:
 		ecbCbcOracle()
+	case 12:
+		ecbByteAtATime()
 	default:
 		fmt.Println("Challenge outside of allowed range")
 	}
