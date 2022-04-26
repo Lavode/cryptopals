@@ -119,3 +119,45 @@ func ecbByteAtATime() {
 	}
 	log.Printf("Decrypted ECB postfix to: %s", postfix)
 }
+
+func ecbCutAndPaste() {
+	header(13, "ECB cut-and-paste")
+
+	ctxt := make([]byte, 3*cipher.AESBlockSize)
+
+	or := oracle.Profile{}
+
+	// Recall the structure of the encrypted message:
+	// email=%s&uid=10&role=user
+
+	// First we need a ciphertext such that there will be a block boundary
+	// after `&role=`. The fixed components of that string consist of 19
+	// bytes, so we'll supply an e-mail address with 13 bytes, to hit 32
+	// bytes.
+	mailCtxt, err := or.Encrypt("johny@doe.com")
+	if err != nil {
+		log.Fatalf("Error querying encryption oracle: %v", err)
+	}
+	// We only care about the first two blocks
+	copy(ctxt[:2*cipher.AESBlockSize], mailCtxt.Bytes[0:2*cipher.AESBlockSize])
+
+	// Now we need a ciphertext such that there will be a block boundary
+	// before `admin`, followed by valid PKCS#7 padding to fill up a block.
+	// The fixed components in `email=` are 6 bytes, so we'll pick an
+	// e-mail of 10 random characters, followed by `admin`, followed by a
+	// valid padding to 16 bytes.
+	email := "1234567890admin\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B"
+	roleCtxt, err := or.Encrypt(email)
+	if err != nil {
+		log.Fatalf("Error querying encryption oracle: %v", err)
+	}
+	// We only care about the second block
+	copy(ctxt[2*cipher.AESBlockSize:], roleCtxt.Bytes[1*cipher.AESBlockSize:])
+
+	prof, err := or.Decrypt(ctxt)
+	if err != nil {
+		log.Fatalf("Error querying decryption oracle: %v", err)
+	}
+
+	log.Printf("Got profile: %+v", prof)
+}

@@ -42,6 +42,8 @@ func main() {
 		ecbCbcOracle()
 	case 12:
 		ecbByteAtATime()
+	case 13:
+		ecbCutAndPaste()
 	default:
 		fmt.Println("Challenge outside of allowed range")
 	}
