@@ -7,13 +7,6 @@ import (
 	"github.com/Lavode/cryptopals/oracle"
 )
 
-// AESBlockSize defines the block size, in bytes, of AES
-const AESBlockSize = 16
-
-// AESBlock is a block of ciphertext or plaintext which can be fed into
-// the AES block cipher.
-type AESBlock [AESBlockSize]byte
-
 // DetectECB attempts to detect if the provided ciphertext is the result of AES
 // in ECB mode.
 //
@@ -30,7 +23,7 @@ type AESBlock [AESBlockSize]byte
 // the original plaintext message had no repeating blocks.
 func DetectECB(ctxt []byte) bool {
 	// AES in ECB mode is guaranteed to produce block-aligned ciphertexts
-	if len(ctxt)%AESBlockSize != 0 {
+	if len(ctxt)%cipher.AESBlockSize != 0 {
 		return false
 	}
 
@@ -39,11 +32,11 @@ func DetectECB(ctxt []byte) bool {
 	// from uniform random had been used, then the probability of two 16
 	// byte blocks being equal is 2^(-128), which is negligible.
 
-	seenBlocks := make(map[AESBlock]bool)
-	for i := 0; i < len(ctxt)/AESBlockSize; i++ {
-		block := [AESBlockSize]byte{}
+	seenBlocks := make(map[cipher.AESBlock]bool)
+	for i := 0; i < len(ctxt)/cipher.AESBlockSize; i++ {
+		block := [cipher.AESBlockSize]byte{}
 
-		copy(block[:], ctxt[i*AESBlockSize:(i+1)*AESBlockSize])
+		copy(block[:], ctxt[i*cipher.AESBlockSize:(i+1)*cipher.AESBlockSize])
 		_, ok := seenBlocks[block]
 		if ok {
 			// Block seen before
@@ -58,16 +51,16 @@ func DetectECB(ctxt []byte) bool {
 
 // DecryptECBPostfix attempts to decrypt an unkonwn ECB postfix, given access to an
 // encryption oracle providing encryptions of a chosen infix.
-func DecryptECBPostfix(oracle *oracle.ECBInfix, blockSize int) ([]byte, error) {
-	postfixLength, err := DetectECBPostfixLength(oracle, blockSize)
+func DecryptECBPostfix(oracle *oracle.ECBInfix) ([]byte, error) {
+	postfixLength, err := DetectECBPostfixLength(oracle)
 	if err != nil {
 		return []byte{}, err
 	}
 	recoveredPostfixLength := 0
 
 	// We'll start with a (known) message one block shy of a full block.
-	knownMessage := make([]byte, blockSize-1)
-	msg := make([]byte, blockSize-1)
+	knownMessage := make([]byte, cipher.AESBlockSize-1)
+	msg := make([]byte, cipher.AESBlockSize-1)
 
 	for recoveredPostfixLength < postfixLength {
 		ctxt, err := oracle.Encrypt(msg)
@@ -75,13 +68,13 @@ func DecryptECBPostfix(oracle *oracle.ECBInfix, blockSize int) ([]byte, error) {
 			return []byte{}, fmt.Errorf("Error querying oracle: %v", err)
 		}
 
-		knownBlock := knownMessage[len(knownMessage)-blockSize+1:]
+		knownBlock := knownMessage[len(knownMessage)-cipher.AESBlockSize+1:]
 
 		// For the first 16 bytes we'll care about the first
 		// ciphertext block, for the next 16 bytes about the
 		// second, and so on.
-		relevantCtxtBlock := recoveredPostfixLength / blockSize
-		postfixByte, err := bruteForceByte(oracle, knownBlock, ctxt.Block(relevantCtxtBlock), blockSize)
+		relevantCtxtBlock := recoveredPostfixLength / cipher.AESBlockSize
+		postfixByte, err := bruteForceByte(oracle, knownBlock, ctxt.Block(relevantCtxtBlock))
 		if err != nil {
 			return []byte{}, err
 		}
@@ -96,7 +89,7 @@ func DecryptECBPostfix(oracle *oracle.ECBInfix, blockSize int) ([]byte, error) {
 		// back to full length - above we'll then move on to the next
 		// block of ciphertext.
 		if len(msg) == 0 {
-			msg = make([]byte, 15)
+			msg = make([]byte, cipher.AESBlockSize-1)
 		} else {
 			msg = msg[:len(msg)-1]
 		}
@@ -109,7 +102,7 @@ func DecryptECBPostfix(oracle *oracle.ECBInfix, blockSize int) ([]byte, error) {
 // DetectECBPostfixLength attempts to detect the length of an unknown postfix,
 // given an encryption oracle allowing to specify the infix of a message with a
 // fixed-size unknown pre- and postfix.
-func DetectECBPostfixLength(oracle *oracle.ECBInfix, blockSize int) (int, error) {
+func DetectECBPostfixLength(oracle *oracle.ECBInfix) (int, error) {
 	// We first figure out the length of the unknown infix. To do so,
 	// starting with a chosen-plaintext length of 0, we increase it one
 	// byte at a time until the length of the ciphertext increases by one
@@ -141,14 +134,14 @@ func DetectECBPostfixLength(oracle *oracle.ECBInfix, blockSize int) (int, error)
 	}
 
 	ctxtLength := len(ctxt)
-	if ctxtLength-initialCtxtLength != blockSize {
+	if ctxtLength-initialCtxtLength != cipher.AESBlockSize {
 		return 0, fmt.Errorf(
 			"Unexpected increase in ciphertext length from %dB to %dB: Expected increase of %dB",
-			initialCtxtLength, ctxtLength, blockSize,
+			initialCtxtLength, ctxtLength, cipher.AESBlockSize,
 		)
 	}
 
-	postfixLength := ctxtLength - blockSize - len(msg)
+	postfixLength := ctxtLength - cipher.AESBlockSize - len(msg)
 
 	return postfixLength, nil
 }
@@ -157,15 +150,15 @@ func DetectECBPostfixLength(oracle *oracle.ECBInfix, blockSize int) (int, error)
 // message prefix, brute-force the last byte of the ciphertext block.
 //
 // This involves 2^8 calls to the encryption oracle.
-func bruteForceByte(oracle *oracle.ECBInfix, knownPrefix []byte, ctxtBlock cipher.AESBlock, blockSize int) (byte, error) {
-	if len(knownPrefix) != blockSize-1 {
-		return 0, fmt.Errorf("Known-prefix must be of length %d; was %d", blockSize-1, len(knownPrefix))
+func bruteForceByte(oracle *oracle.ECBInfix, knownPrefix []byte, ctxtBlock cipher.AESBlock) (byte, error) {
+	if len(knownPrefix) != cipher.AESBlockSize-1 {
+		return 0, fmt.Errorf("Known-prefix must be of length %d; was %d", cipher.AESBlockSize-1, len(knownPrefix))
 	}
 
 	for i := 0; i < 256; i++ {
-		msg := make([]byte, blockSize)
+		msg := make([]byte, cipher.AESBlockSize)
 		copy(msg, knownPrefix)
-		msg[blockSize-1] = byte(i)
+		msg[cipher.AESBlockSize-1] = byte(i)
 
 		ctxt, err := oracle.Encrypt(msg)
 		if err != nil {

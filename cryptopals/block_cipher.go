@@ -95,6 +95,10 @@ func ecbByteAtATime() {
 	}
 	log.Printf("Deduced block size: %dB", blockSize)
 
+	if blockSize != cipher.AESBlockSize {
+		log.Fatalf("Deduced unsupported block size: %dB; must be 16B", blockSize)
+	}
+
 	// With four blocks' worth of zero bytes we're guaranteed to have at
 	// least two blocks full of zero bytes in the middle.
 	msg := make([]byte, 4*blockSize)
@@ -109,7 +113,7 @@ func ecbByteAtATime() {
 	}
 	log.Printf("Oracle seems to be using ECB mode")
 
-	postfix, err := analysis.DecryptECBPostfix(&oracle, blockSize)
+	postfix, err := analysis.DecryptECBPostfix(&oracle)
 	if err != nil {
 		log.Fatalf("Error decrypting ECB postfix: %v", err)
 	}

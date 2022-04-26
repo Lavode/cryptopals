@@ -15,6 +15,11 @@ const AESKeySize = 16
 // AESBlockSize specifies the length of an AES block in bytes.
 const AESBlockSize = 16
 
+// AESBlock is a block of ciphertext or plaintext which can be fed into
+// the AES block cipher.
+type AESBlock [AESBlockSize]byte
+
+// AESCiphertext is an AES ciphertext, consisting of multiple blocks.
 type AESCiphertext struct {
 	Bytes []byte
 }
@@ -23,13 +28,7 @@ func (ctxt *AESCiphertext) Block(id int) AESBlock {
 	var bytes [AESBlockSize]byte
 	copy(bytes[:], ctxt.Bytes[id*AESBlockSize:(id+1)*AESBlockSize])
 
-	return AESBlock{
-		Bytes: bytes,
-	}
-}
-
-type AESBlock struct {
-	Bytes [AESBlockSize]byte
+	return AESBlock(bytes)
 }
 
 func newAES(key []byte) (cipher.Block, error) {
